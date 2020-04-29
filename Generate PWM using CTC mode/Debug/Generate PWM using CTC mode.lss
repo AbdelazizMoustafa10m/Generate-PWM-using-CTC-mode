@@ -3,31 +3,31 @@ Generate PWM using CTC mode.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         000000e8  00000000  00000000  00000074  2**1
+  0 .text         000000f2  00000000  00000000  00000074  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000000  00800060  00800060  0000015c  2**0
+  1 .data         00000000  00800060  00800060  00000166  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00000001  00800060  00800060  0000015c  2**0
+  2 .bss          00000001  00800060  00800060  00000166  2**0
                   ALLOC
-  3 .comment      00000030  00000000  00000000  0000015c  2**0
+  3 .comment      00000030  00000000  00000000  00000166  2**0
                   CONTENTS, READONLY
-  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000018c  2**2
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000198  2**2
                   CONTENTS, READONLY
-  5 .debug_aranges 00000030  00000000  00000000  000001c8  2**0
+  5 .debug_aranges 00000048  00000000  00000000  000001d4  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   000005ca  00000000  00000000  000001f8  2**0
+  6 .debug_info   000006a0  00000000  00000000  0000021c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 0000054e  00000000  00000000  000007c2  2**0
+  7 .debug_abbrev 00000599  00000000  00000000  000008bc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   0000022a  00000000  00000000  00000d10  2**0
+  8 .debug_line   000002d8  00000000  00000000  00000e55  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000058  00000000  00000000  00000f3c  2**2
+  9 .debug_frame  0000006c  00000000  00000000  00001130  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000337  00000000  00000000  00000f94  2**0
+ 10 .debug_str    0000037e  00000000  00000000  0000119c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00000049  00000000  00000000  000012cb  2**0
+ 11 .debug_loc    00000049  00000000  00000000  0000151a  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000020  00000000  00000000  00001314  2**0
+ 12 .debug_ranges 00000028  00000000  00000000  00001563  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -40,7 +40,7 @@ Disassembly of section .text:
   10:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
   14:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
   18:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
-  1c:	0c 94 4c 00 	jmp	0x98	; 0x98 <__vector_7>
+  1c:	0c 94 3e 00 	jmp	0x7c	; 0x7c <__vector_7>
   20:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
   24:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
   28:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
@@ -76,116 +76,119 @@ Disassembly of section .text:
   6a:	a1 36       	cpi	r26, 0x61	; 97
   6c:	b2 07       	cpc	r27, r18
   6e:	e1 f7       	brne	.-8      	; 0x68 <.do_clear_bss_loop>
-  70:	0e 94 6e 00 	call	0xdc	; 0xdc <main>
-  74:	0c 94 72 00 	jmp	0xe4	; 0xe4 <_exit>
+  70:	0e 94 60 00 	call	0xc0	; 0xc0 <main>
+  74:	0c 94 77 00 	jmp	0xee	; 0xee <_exit>
 
 00000078 <__bad_interrupt>:
   78:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
-0000007c <Timer1_Init>:
-volatile uint8_t count= 0;
+0000007c <__vector_7>:
+/******************************************************************************************************
+*                            This ISR is fired whenever a match occurs
+******************************************************************************************************/
 
-void Timer1_Init(void)
-{
-	// set up timer with prescaler = 0 and CTC mode
-	TCCR1B |= (1 << WGM12)|(1 << CS10);
-  7c:	8e b5       	in	r24, 0x2e	; 46
-  7e:	89 60       	ori	r24, 0x09	; 9
-  80:	8e bd       	out	0x2e, r24	; 46
-	
-	// initialize counter
-	TCNT1 = 0;
-  82:	1d bc       	out	0x2d, r1	; 45
-  84:	1c bc       	out	0x2c, r1	; 44
-	
-	// initialize compare value
-	OCR1A = 19999;
-  86:	8f e1       	ldi	r24, 0x1F	; 31
-  88:	9e e4       	ldi	r25, 0x4E	; 78
-  8a:	9b bd       	out	0x2b, r25	; 43
-  8c:	8a bd       	out	0x2a, r24	; 42
-	
-	// enable compare interrupt
-	TIMSK |= (1 << OCIE1A);
-  8e:	89 b7       	in	r24, 0x39	; 57
-  90:	80 61       	ori	r24, 0x10	; 16
-  92:	89 bf       	out	0x39, r24	; 57
-	
-	// enable global interrupts
-	sei();
-  94:	78 94       	sei
-  96:	08 95       	ret
-
-00000098 <__vector_7>:
-}
-
-// this ISR is fired whenever a match occurs
 ISR (TIMER1_COMPA_vect)
 {
-  98:	1f 92       	push	r1
-  9a:	0f 92       	push	r0
-  9c:	0f b6       	in	r0, 0x3f	; 63
-  9e:	0f 92       	push	r0
-  a0:	11 24       	eor	r1, r1
-  a2:	8f 93       	push	r24
-  a4:	9f 93       	push	r25
+  7c:	1f 92       	push	r1
+  7e:	0f 92       	push	r0
+  80:	0f b6       	in	r0, 0x3f	; 63
+  82:	0f 92       	push	r0
+  84:	11 24       	eor	r1, r1
+  86:	8f 93       	push	r24
+  88:	9f 93       	push	r25
 	// check for the global counter
-	// if count == 1, delay required = 11 ms which is 10999
-	// if count == 0, delay required = 9 ms which is 1=9999
+	// if Flag == 1, delay required = 13 ms which is 12999
+	// if Flag == 0, delay required = 7 ms which is 6999
 	// thus, the value of the OCRx should be constantly updated
-	if(count)
-  a6:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <_edata>
-  aa:	88 23       	and	r24, r24
-  ac:	41 f0       	breq	.+16     	; 0xbe <__vector_7+0x26>
+	if(Flag)
+  8a:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <_edata>
+  8e:	88 23       	and	r24, r24
+  90:	41 f0       	breq	.+16     	; 0xa2 <__vector_7+0x26>
 	{
-		count=0; //clear count
-  ae:	10 92 60 00 	sts	0x0060, r1	; 0x800060 <_edata>
-		PORTB|= (1<<PB6); // set Pin
-  b2:	c6 9a       	sbi	0x18, 6	; 24
-		OCR1A= 10999; //update compare value
-  b4:	87 ef       	ldi	r24, 0xF7	; 247
-  b6:	9a e2       	ldi	r25, 0x2A	; 42
-  b8:	9b bd       	out	0x2b, r25	; 43
-  ba:	8a bd       	out	0x2a, r24	; 42
-  bc:	08 c0       	rjmp	.+16     	; 0xce <__vector_7+0x36>
+		Flag=0; //Clear Flag
+  92:	10 92 60 00 	sts	0x0060, r1	; 0x800060 <_edata>
+		SET_BIT(PORTB,6); // Set Pin 
+  96:	c6 9a       	sbi	0x18, 6	; 24
+		OCR1A= 12999; //Update compare value
+  98:	87 ec       	ldi	r24, 0xC7	; 199
+  9a:	92 e3       	ldi	r25, 0x32	; 50
+  9c:	9b bd       	out	0x2b, r25	; 43
+  9e:	8a bd       	out	0x2a, r24	; 42
+  a0:	08 c0       	rjmp	.+16     	; 0xb2 <__vector_7+0x36>
 	}
 	else
 	{
-		count=1; //set count
-  be:	81 e0       	ldi	r24, 0x01	; 1
-  c0:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
-		PORTB&= ~(1<<PB6); // clear pin
-  c4:	c6 98       	cbi	0x18, 6	; 24
-		OCR1A= 9999;
-  c6:	8f e0       	ldi	r24, 0x0F	; 15
-  c8:	97 e2       	ldi	r25, 0x27	; 39
-  ca:	9b bd       	out	0x2b, r25	; 43
-  cc:	8a bd       	out	0x2a, r24	; 42
+		Flag=1; //Set Flag
+  a2:	81 e0       	ldi	r24, 0x01	; 1
+  a4:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+		CLEAR_BIT(PORTB,6); // Clear Pin
+  a8:	c6 98       	cbi	0x18, 6	; 24
+		OCR1A= 6999; //Update compare value
+  aa:	87 e5       	ldi	r24, 0x57	; 87
+  ac:	9b e1       	ldi	r25, 0x1B	; 27
+  ae:	9b bd       	out	0x2b, r25	; 43
+  b0:	8a bd       	out	0x2a, r24	; 42
 	}
 }
-  ce:	9f 91       	pop	r25
-  d0:	8f 91       	pop	r24
-  d2:	0f 90       	pop	r0
-  d4:	0f be       	out	0x3f, r0	; 63
-  d6:	0f 90       	pop	r0
-  d8:	1f 90       	pop	r1
-  da:	18 95       	reti
+  b2:	9f 91       	pop	r25
+  b4:	8f 91       	pop	r24
+  b6:	0f 90       	pop	r0
+  b8:	0f be       	out	0x3f, r0	; 63
+  ba:	0f 90       	pop	r0
+  bc:	1f 90       	pop	r1
+  be:	18 95       	reti
 
-000000dc <main>:
+000000c0 <main>:
 
 int main(void)
 {
-    // initialize the output pin, say Pb6
-    DDRB |= (1 << 6);
-  dc:	be 9a       	sbi	0x17, 6	; 23
-    
-    // initialize timer1
+    /* initialize Pb6 to the output Mode */ 
+    SET_BIT(DDRB,6);
+  c0:	be 9a       	sbi	0x17, 6	; 23
+    /* Initialize Timer1 */
     Timer1_Init();
-  de:	0e 94 3e 00 	call	0x7c	; 0x7c <Timer1_Init>
-  e2:	ff cf       	rjmp	.-2      	; 0xe2 <main+0x6>
+  c2:	0e 94 64 00 	call	0xc8	; 0xc8 <Timer1_Init>
+  c6:	ff cf       	rjmp	.-2      	; 0xc6 <main+0x6>
 
-000000e4 <_exit>:
-  e4:	f8 94       	cli
+000000c8 <Timer1_Init>:
+*                                         Function Definition
+******************************************************************************************************/
+void Timer1_Init(void)
+{
+	/* Set Up Timer1 with Prescaler = 0 */
+	SET_BIT(TCCR1B,CS10);
+  c8:	8e b5       	in	r24, 0x2e	; 46
+  ca:	81 60       	ori	r24, 0x01	; 1
+  cc:	8e bd       	out	0x2e, r24	; 46
+	/* Set Up Timer1 to Work in CTC Mode */
+	SET_BIT(TCCR1B,WGM12);
+  ce:	8e b5       	in	r24, 0x2e	; 46
+  d0:	88 60       	ori	r24, 0x08	; 8
+  d2:	8e bd       	out	0x2e, r24	; 46
+	/* Initialize counter with zero */
+	TCNT1 = 0;
+  d4:	1d bc       	out	0x2d, r1	; 45
+  d6:	1c bc       	out	0x2c, r1	; 44
+	/* Initialize compare value */
+	OCR1A = 19999;
+  d8:	8f e1       	ldi	r24, 0x1F	; 31
+  da:	9e e4       	ldi	r25, 0x4E	; 78
+  dc:	9b bd       	out	0x2b, r25	; 43
+  de:	8a bd       	out	0x2a, r24	; 42
+	/* Enable compare interrupt */
+	SET_BIT(TIMSK,OCIE1A);
+  e0:	89 b7       	in	r24, 0x39	; 57
+  e2:	80 61       	ori	r24, 0x10	; 16
+  e4:	89 bf       	out	0x39, r24	; 57
+	/* Enable global interrupts*/
+	SET_BIT(SREG,7);
+  e6:	8f b7       	in	r24, 0x3f	; 63
+  e8:	80 68       	ori	r24, 0x80	; 128
+  ea:	8f bf       	out	0x3f, r24	; 63
+  ec:	08 95       	ret
 
-000000e6 <__stop_program>:
-  e6:	ff cf       	rjmp	.-2      	; 0xe6 <__stop_program>
+000000ee <_exit>:
+  ee:	f8 94       	cli
+
+000000f0 <__stop_program>:
+  f0:	ff cf       	rjmp	.-2      	; 0xf0 <__stop_program>
